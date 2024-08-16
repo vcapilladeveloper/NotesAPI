@@ -7,35 +7,23 @@ const Note = require('./models/note')
 app.use(express.static('dist'))
 app.use(express.json())
 app.use(cors())
-const generateId = () => {
-    const maxId = notes.length > 0
-        ? Math.max(...notes.map(n => n.id))
-        : 0
-    return maxId + 1
-}
 
 app.post('/api/notes', (request, response) => {
     const body = request.body
-    console.log(...notes.map(n => n.id)) //1 2 3
-    console.log(notes.map(n => n.id)) //[ 1, 2, 3 ]
-    console.log(Math.max(1, 2, 3)) //3
-    console.log(Math.max([1, 2, 3])) //NaN
-    if (!body.content) {
-        return response.status(400).json({
-            error: 'content missing'
-        })
+  
+    if (body.content === undefined) {
+      return response.status(400).json({ error: 'content missing' })
     }
-
-    const note = {
-        content: body.content,
-        important: Boolean(body.important) || false,
-        id: generateId(),
-    }
-
-    notes = notes.concat(note)
-
-    response.json(note)
-})
+  
+    const note = new Note({
+      content: body.content,
+      important: body.important || false,
+    })
+  
+    note.save().then(savedNote => {
+      response.json(savedNote)
+    })
+  })
 
 app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
